@@ -1,0 +1,965 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Aubrey Chen — Portfolio</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400..800&family=Space+Grotesk:wght@500;600;700&family=Instrument+Sans:ital,wght@0,400;0,500;0,600;1,400&display=swap" rel="stylesheet">
+<style>
+/* ===================================================================
+   TOKENS
+=================================================================== */
+:root{
+  --cream:      #F3E9D6;
+  --cream-2:    #EDE0C8;
+  --sand:       #E4C79C;
+  --clay:       #C88F5C;
+  --clay-deep:  #9C5E39;
+  --peach:      #F2A75F;
+  --peach-soft: #FBD9AC;
+  --ink:        #4A3524;
+  --ink-soft:   #7A6045;
+  --glass-fill: rgba(255,250,240,0.46);
+  --glass-fill-strong: rgba(255,250,240,0.72);
+  --glass-edge: rgba(255,255,255,0.75);
+  --glass-shadow: rgba(120,80,40,0.20);
+  --radius-l: 28px;
+  --radius-m: 20px;
+  --radius-s: 12px;
+  --dur: 0.6s;
+  --ease: cubic-bezier(.65,0,.35,1);
+}
+@media (prefers-reduced-motion: reduce){
+  :root{ --dur: 0.01s; }
+}
+
+*,*::before,*::after{ box-sizing: border-box; }
+html{ scroll-behavior: auto; }
+body{
+  margin:0;
+  font-family:"Instrument Sans", sans-serif;
+  color: var(--ink);
+  background: var(--cream);
+  overflow-x: hidden;
+}
+h1,h2,h3,h4{
+  font-family:"Bricolage Grotesque", sans-serif;
+  margin: 0 0 .3em 0;
+  color: var(--ink);
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+p{ line-height:1.65; color: var(--ink-soft); max-width: 62ch; }
+a{ color: var(--clay-deep); }
+button{ font-family: inherit; }
+
+/* subtle grain for retro texture */
+#grain{
+  position: fixed; inset:0; z-index: 5000; pointer-events:none;
+  opacity: .05; mix-blend-mode: multiply;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='120' height='120'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/></filter><rect width='100%25' height='100%25' filter='url(%23n)'/></svg>");
+  background-size: 220px 220px;
+}
+
+/* ===================================================================
+   GLASS PRIMITIVES
+=================================================================== */
+.glass{
+  background: linear-gradient(155deg, var(--glass-fill-strong), var(--glass-fill));
+  backdrop-filter: blur(18px) saturate(140%);
+  -webkit-backdrop-filter: blur(18px) saturate(140%);
+  border: 1px solid var(--glass-edge);
+  box-shadow: 0 10px 30px var(--glass-shadow), inset 0 1px 0 rgba(255,255,255,.8);
+  border-radius: var(--radius-m);
+}
+.glass-pill{
+  background: linear-gradient(155deg, var(--glass-fill-strong), var(--glass-fill));
+  backdrop-filter: blur(16px) saturate(140%);
+  -webkit-backdrop-filter: blur(16px) saturate(140%);
+  border: 1px solid var(--glass-edge);
+  box-shadow: 0 6px 18px var(--glass-shadow), inset 0 1px 0 rgba(255,255,255,.8);
+  border-radius: 999px;
+}
+
+/* ===================================================================
+   LOGO MARK (small pup head, reused in nav)
+=================================================================== */
+.logo-mark{ width: 34px; height: 34px; flex: none; }
+.logo-mark svg{ width:100%; height:100%; display:block; }
+
+/* ===================================================================
+   TOP NAV (floating glass pill)
+=================================================================== */
+#topnav{
+  position: fixed; top: 18px; left: 50%; transform: translateX(-50%);
+  z-index: 400;
+  display:flex; align-items:center; gap: 14px;
+  padding: 8px 10px 8px 14px;
+}
+#topnav .nav-name{
+  font-family:"Space Grotesk", sans-serif; font-weight:600; font-size: 14px;
+  color: var(--ink); white-space: nowrap;
+}
+#topnav .nav-links{ display:flex; gap: 4px; }
+#topnav .nav-links button{
+  border:none; background: transparent; color: var(--ink-soft);
+  font-family:"Space Grotesk", sans-serif; font-size: 13px; font-weight: 600;
+  padding: 8px 12px; border-radius: 999px; cursor:pointer;
+  transition: background .25s ease, color .25s ease;
+}
+#topnav .nav-links button:hover, #topnav .nav-links button:focus-visible{
+  background: var(--peach-soft); color: var(--clay-deep);
+}
+#topnav .nav-links button.home-btn{ color: var(--clay-deep); }
+@media (max-width: 720px){
+  #topnav .nav-name{ display:none; }
+}
+
+/* ===================================================================
+   VIEWS (trail / detail pages) — one visible at a time
+=================================================================== */
+.view{ display:none; }
+.view.visible{ display:block; }
+
+/* ===================================================================
+   HERO
+=================================================================== */
+#hero{
+  position:relative; min-height: 100svh; display:flex; align-items:center;
+  padding: 120px 8vw 60px;
+  overflow:hidden;
+  background:
+    radial-gradient(60% 50% at 82% 18%, var(--peach-soft) 0%, rgba(251,217,172,0) 70%),
+    var(--cream);
+}
+.sun-wrap{
+  position:absolute; top:-8vw; right:-6vw; width: 40vw; height:40vw;
+  perspective: 900px; cursor:pointer;
+}
+.sun-flip{
+  position:relative; width:100%; height:100%; border-radius:50%;
+  transform-style: preserve-3d;
+  transition: transform .6s cubic-bezier(.65,0,.35,1);
+  box-shadow: 0 0 90px rgba(200,140,80,.35);
+}
+.sun-wrap:hover .sun-flip, .sun-wrap:focus-visible .sun-flip{ transform: rotateY(180deg); }
+.sun-face{
+  position:absolute; inset:0; border-radius:50%; backface-visibility:hidden;
+  display:flex; align-items:center; justify-content:center;
+}
+.sun-front{ background: radial-gradient(circle at 35% 35%, var(--peach) 0%, var(--clay) 68%, var(--clay-deep) 100%); }
+.sun-back{
+  background: radial-gradient(circle at 65% 35%, var(--peach-soft) 0%, var(--peach) 70%, var(--clay) 100%);
+  transform: rotateY(180deg);
+}
+.sun-back svg{ width:42%; height:42%; }
+#hero .strata{
+  position:absolute; left:0; right:0; bottom:0; height: 34vh; min-height:170px;
+  background: repeating-linear-gradient(
+    182deg,
+    var(--sand) 0px, var(--sand) 34px,
+    var(--clay) 34px, var(--clay) 58px,
+    var(--cream-2) 58px, var(--cream-2) 92px,
+    var(--peach-soft) 92px, var(--peach-soft) 118px
+  );
+  clip-path: polygon(0 38%, 12% 30%, 26% 42%, 40% 24%, 55% 40%, 70% 22%, 85% 36%, 100% 28%, 100% 100%, 0 100%);
+  opacity: .9;
+}
+#hero .content{ position: relative; z-index: 2; max-width: 720px; }
+#hero .badge{
+  display:inline-flex; align-items:center; gap:8px;
+  padding: 7px 16px 7px 10px; margin-bottom: 22px;
+  font-family:"Space Grotesk",sans-serif; font-size: 13px; font-weight:600; color: var(--clay-deep);
+}
+.name-wrap{ position:relative; display:inline-block; margin-bottom: 18px; }
+#hero h1{
+  font-size: clamp(46px, 8vw, 92px); line-height: .98; margin-bottom: 0;
+  cursor:pointer; display:inline-flex; align-items:center; gap: 14px;
+  border-bottom: 3px dashed transparent; transition: border-color .2s ease;
+}
+#hero h1:hover, #hero h1:focus-visible{ border-color: var(--clay); outline:none; }
+#hero h1 .name-caret{
+  width: clamp(22px,3vw,32px); height: clamp(22px,3vw,32px); flex:none;
+  transition: transform .3s var(--ease);
+}
+#hero h1[aria-expanded="true"] .name-caret{ transform: rotate(180deg); }
+#contact-menu{
+  position:absolute; top: calc(100% + 8px); left:0; z-index: 30;
+  display:flex; flex-direction:column; gap:2px; padding: 10px; min-width: 240px;
+  opacity:0; transform: translateY(-8px) scale(.97); pointer-events:none;
+  transform-origin: top left;
+  transition: opacity .2s ease, transform .2s var(--ease);
+}
+#contact-menu.open{ opacity:1; transform: translateY(0) scale(1); pointer-events:auto; }
+#contact-menu a{
+  display:block; padding: 10px 14px; border-radius: 12px; text-decoration:none;
+  font-family:"Space Grotesk",sans-serif; font-weight:600; font-size:14px; color: var(--ink);
+  transition: background .15s ease, color .15s ease;
+}
+#contact-menu a:hover{ background: var(--peach-soft); color: var(--clay-deep); }
+#hero .role{
+  font-family:"Space Grotesk", sans-serif; font-weight:600; color: var(--clay-deep);
+  font-size: clamp(15px, 1.6vw, 19px); margin-bottom: 14px;
+}
+#hero p.lede{ font-size: clamp(16px,1.9vw,19px); color: var(--ink-soft); }
+#hero .scrollcue{
+  margin-top: 46px; display:flex; align-items:center; gap:10px;
+  font-family:"Space Grotesk", sans-serif; font-weight:600; font-size: 14px; color: var(--clay-deep);
+}
+#hero .scrollcue .paw{ width:20px; height:20px; animation: pawbounce 1.4s ease-in-out infinite; }
+@keyframes pawbounce{ 0%,100%{ transform: translateY(0); } 50%{ transform: translateY(8px); } }
+
+/* ===================================================================
+   TRAIL TRACK
+=================================================================== */
+#trail-track{
+  position: relative;
+  height: 560vh;
+  background:
+    repeating-linear-gradient( 186deg,
+      var(--cream) 0px, var(--cream) 140px,
+      var(--cream-2) 140px, var(--cream-2) 280px,
+      var(--sand) 280px, var(--sand) 330px,
+      var(--cream) 330px, var(--cream) 470px
+    );
+}
+#trail-svg{ position:absolute; inset:0; width:100%; height:100%; display:block; }
+#trail-svg path{
+  fill:none; stroke: var(--clay-deep); stroke-width: .55;
+  stroke-dasharray: 2.6 3.2; stroke-linecap: round; opacity:.55;
+}
+
+.waypoint{
+  position:absolute; transform: translate(-50%,-50%);
+  width: min(280px, 62vw);
+  padding: 20px 22px;
+  cursor:pointer; text-align:left;
+  border:none; display:block;
+  transition: transform .35s var(--ease), box-shadow .35s ease;
+}
+.waypoint:hover, .waypoint:focus-visible{ transform: translate(-50%,-56%) scale(1.03); }
+.waypoint .mile{
+  font-family:"Space Grotesk", sans-serif; font-size: 12px; font-weight:600;
+  color: var(--clay-deep); opacity:.8; margin-bottom: 6px; display:block;
+}
+.waypoint h3{ font-size: 22px; margin-bottom: 6px; }
+.waypoint p{ font-size: 14px; margin:0; color: var(--ink-soft); }
+
+#trail-end{
+  position: relative;
+  padding: 90px 8vw 120px;
+  background: linear-gradient(180deg, var(--cream) 0%, var(--peach-soft) 100%);
+  text-align:center;
+}
+#trail-end .doghouse{
+  max-width: 560px; margin: 0 auto; padding: 44px 36px;
+}
+#trail-end h2{ font-size: clamp(30px,4vw,42px); }
+#trail-end .socials{ display:flex; gap:12px; justify-content:center; flex-wrap:wrap; margin-top: 22px; }
+#trail-end .socials a{
+  text-decoration:none; font-family:"Space Grotesk",sans-serif; font-weight:600; font-size:14px;
+  padding: 10px 18px; border-radius: 999px; color: var(--clay-deep);
+  background: var(--glass-fill-strong); border: 1px solid var(--glass-edge);
+  transition: transform .2s ease, background .2s ease;
+}
+#trail-end .socials a:hover{ transform: translateY(-2px); background: var(--peach-soft); }
+
+/* ===================================================================
+   MASCOT
+=================================================================== */
+#mascot{
+  position: fixed; top: 42vh; left:50%;
+  width: 96px; height: 58px; margin-left:-48px; margin-top:-40px;
+  z-index: 60; opacity: 0; cursor: pointer;
+  transition: opacity .3s ease, left .05s linear;
+  will-change: left, top, opacity;
+}
+#mascot.cursor-mode{ pointer-events: none; transition: opacity .25s ease; z-index: 550; }
+#mascot .flip{ width:100%; height:100%; transition: transform .18s ease; image-rendering: pixelated; }
+#mascot svg{ width:100%; height:100%; overflow: visible; display:block; image-rendering: pixelated; }
+#mascot.walking .flip{ animation: pixelbob .28s steps(2) infinite; }
+@keyframes pixelbob{ 0%,100%{ transform: translateY(0); } 50%{ transform: translateY(-3px); } }
+#mascot .shadow{
+  position:absolute; left:50%; bottom:-6px; width:52px; height:10px; margin-left:-26px;
+  background: rgba(74,53,36,.22); border-radius:50%; filter: blur(1px);
+}
+/* click reactions live on the OUTER #mascot element (not .flip), so they
+   never fight with .flip's own scaleX(-1) direction-facing transform */
+#mascot.bounce{ animation: mascotBounce .7s cubic-bezier(.34,1.56,.64,1); }
+@keyframes mascotBounce{
+  0%{ transform: translateY(0) rotate(0deg); }
+  30%{ transform: translateY(-24px) rotate(-18deg); }
+  55%{ transform: translateY(-24px) rotate(360deg); }
+  80%{ transform: translateY(0) rotate(360deg); }
+  100%{ transform: translateY(0) rotate(360deg); }
+}
+#mascot.tap{ animation: mascotTap .32s ease; }
+@keyframes mascotTap{
+  0%{ transform: scale(1); }
+  40%{ transform: scale(.78,1.18) translateY(5px); }
+  100%{ transform: scale(1); }
+}
+#mascot-bubble{
+  position:absolute; left:50%; top:-14px; transform: translate(-50%,4px) scale(.85);
+  padding: 5px 12px; white-space:nowrap; font-family:"Space Grotesk",sans-serif;
+  font-weight:700; font-size:12px; color: var(--clay-deep);
+  opacity:0; pointer-events:none; transition: opacity .18s ease, transform .18s ease;
+}
+#mascot-bubble.show{ opacity:1; transform: translate(-50%,0) scale(1); }
+.click-ripple{
+  position:fixed; width:10px; height:10px; margin:-5px 0 0 -5px; border-radius:50%;
+  background: var(--peach); opacity:.7; pointer-events:none; z-index:520;
+  animation: rippleGrow .5s ease-out forwards;
+}
+@keyframes rippleGrow{ to{ width:50px; height:50px; margin:-25px 0 0 -25px; opacity:0; } }
+
+/* ===================================================================
+   DETAIL PAGES
+=================================================================== */
+.page{
+  min-height: 100svh; padding: 120px 8vw 100px; max-width: 980px; margin: 0 auto;
+}
+.page .eyebrow{
+  font-family:"Space Grotesk", sans-serif; font-weight:600; font-size: 14px;
+  color: var(--clay-deep); margin-bottom: 8px;
+}
+.page h1{ font-size: clamp(38px,5.4vw,64px); margin-bottom: 18px; }
+.page > p.intro{ font-size: 18px; margin-bottom: 46px; }
+
+.card-grid{ display:grid; gap: 22px; grid-template-columns: repeat(auto-fit, minmax(280px,1fr)); }
+.card{ padding: 26px 28px; }
+.card h3{ font-size: 21px; margin-bottom: 10px; }
+.tag-row{ display:flex; gap:8px; flex-wrap:wrap; margin-bottom: 14px; }
+.tag{
+  font-family:"Space Grotesk",sans-serif; font-size: 12px; font-weight: 600;
+  color: var(--clay-deep); background: var(--peach-soft);
+  padding: 4px 12px; border-radius: 999px;
+}
+.card a.go{
+  display:inline-flex; align-items:center; gap:6px; margin-top: 14px;
+  font-family:"Space Grotesk",sans-serif; font-weight:600; font-size: 14px;
+  text-decoration:none; color: var(--clay-deep);
+}
+.card a.go:hover{ color: var(--ink); }
+
+.meter-row{ margin-bottom: 20px; }
+.meter-row .lbl{ display:flex; justify-content:space-between; font-family:"Space Grotesk",sans-serif; font-size:14px; font-weight:600; margin-bottom:6px; }
+.meter{ height: 12px; border-radius: 999px; background: var(--cream-2); overflow:hidden; border: 1px solid var(--sand); }
+.meter > i{ display:block; height:100%; border-radius:999px; background: linear-gradient(90deg, var(--peach), var(--clay)); }
+
+.essay-block{ margin-bottom: 34px; }
+.essay-block h4{ font-size: 18px; margin-bottom: 8px; }
+
+.timeline{ position:relative; padding-left: 26px; }
+.timeline::before{ content:""; position:absolute; left:6px; top:6px; bottom:6px; width:2px; background: var(--sand); }
+.tl-item{ position:relative; padding-bottom: 26px; }
+.tl-item::before{ content:""; position:absolute; left:-26px; top:4px; width:12px; height:12px; border-radius:50%; background: var(--peach); border:2px solid var(--clay-deep); }
+.tl-item .date{ font-family:"Space Grotesk",sans-serif; font-size:12px; font-weight:600; color:var(--clay-deep); }
+.tl-item h4{ font-size:18px; margin: 4px 0 6px; }
+
+.blog-list{ display:flex; flex-direction:column; gap: 14px; }
+.blog-item{ padding: 20px 22px; cursor:pointer; }
+.blog-item .date{ font-family:"Space Grotesk",sans-serif; font-size:12px; font-weight:600; color:var(--clay-deep); }
+.blog-item h3{ font-size: 19px; margin: 4px 0 6px; }
+.blog-item .excerpt{ margin:0; font-size:14px; }
+.blog-item .full{ display:none; margin-top:14px; padding-top:14px; border-top:1px dashed var(--sand); font-size:14px; }
+.blog-item.open .full{ display:block; }
+.blog-item .toggle{ font-family:"Space Grotesk",sans-serif; font-weight:600; font-size:13px; color:var(--clay-deep); margin-top:10px; display:inline-block; }
+
+#page-about .about-grid{ display:grid; grid-template-columns: 1.15fr .85fr; gap: 40px; }
+@media (max-width: 860px){ #page-about .about-grid{ grid-template-columns: 1fr; } }
+
+.back-fab{
+  position: fixed; bottom: 22px; left: 22px; z-index: 350;
+  display:flex; align-items:center; gap:8px; padding: 12px 18px 12px 12px;
+  border:none; cursor:pointer;
+  font-family:"Space Grotesk",sans-serif; font-weight:600; font-size:14px; color: var(--clay-deep);
+}
+.back-fab svg{ width:18px; height:18px; }
+
+/* ===================================================================
+   GLASS TRANSITION OVERLAY
+=================================================================== */
+#glass-transition{
+  position: fixed; inset:0; z-index: 5000; pointer-events:none; opacity:0;
+  background: radial-gradient(circle at var(--cx) var(--cy), var(--peach-soft) 0%, var(--cream) 55%, var(--sand) 100%);
+  backdrop-filter: blur(22px) saturate(160%);
+  -webkit-backdrop-filter: blur(22px) saturate(160%);
+  clip-path: circle(0% at var(--cx) var(--cy));
+}
+#glass-transition.cover{ opacity:1; transition: clip-path var(--dur) var(--ease); clip-path: circle(150% at var(--cx) var(--cy)); }
+#glass-transition.uncover{ opacity:1; transition: clip-path var(--dur) var(--ease); clip-path: circle(0% at var(--cx) var(--cy)); }
+
+footer.mini{ text-align:center; padding: 26px; font-size:13px; color: var(--ink-soft); }
+</style>
+</head>
+<body>
+
+<div id="grain"></div>
+
+<nav id="topnav" class="glass-pill">
+  <div class="logo-mark">
+    <svg viewBox="0 0 100 100"><circle cx="50" cy="50" r="48" fill="#F2A75F"/><ellipse cx="30" cy="30" rx="14" ry="18" fill="#C88F5C" transform="rotate(-18 30 30)"/><ellipse cx="70" cy="30" rx="14" ry="18" fill="#C88F5C" transform="rotate(18 70 30)"/><ellipse cx="50" cy="56" rx="30" ry="26" fill="#FBD9AC"/><circle cx="40" cy="52" r="4.5" fill="#4A3524"/><circle cx="60" cy="52" r="4.5" fill="#4A3524"/><ellipse cx="50" cy="64" rx="6" ry="4.5" fill="#4A3524"/></svg>
+  </div>
+  <span class="nav-name">Aubrey Chen</span>
+  <div class="nav-links">
+    <button class="home-btn" data-nav="trail">Trail</button>
+    <button data-nav="about">About</button>
+    <button data-nav="projects">Projects</button>
+    <button data-nav="skills">Skills</button>
+    <button data-nav="blog">Blog</button>
+    <button data-nav="achievements">Achievements</button>
+  </div>
+</nav>
+
+<!-- ============================= TRAIL VIEW ============================= -->
+<main id="trail-view" class="view visible">
+
+  <section id="hero">
+    <div class="sun-wrap" title="Say hi">
+      <div class="sun-flip">
+        <div class="sun-face sun-front"></div>
+        <div class="sun-face sun-back">
+          <svg viewBox="0 0 100 100">
+            <circle cx="34" cy="42" r="6.5" fill="#4A3524"/>
+            <circle cx="66" cy="42" r="6.5" fill="#4A3524"/>
+            <path d="M28 60 Q50 84 72 60" stroke="#4A3524" stroke-width="7" fill="none" stroke-linecap="round"/>
+          </svg>
+        </div>
+      </div>
+    </div>
+    <div class="strata"></div>
+    <div class="content">
+      <span class="badge glass-pill">🐾 Surrey, BC</span>
+      <div class="name-wrap">
+        <h1 id="name-trigger" tabindex="0" role="button" aria-haspopup="true" aria-expanded="false">
+          Aubrey Chen
+          <svg class="name-caret" viewBox="0 0 24 24" fill="none" stroke="#9C5E39" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>
+        </h1>
+        <div id="contact-menu" class="glass" role="menu">
+          <a href="mailto:AubreyChen2010@gmail.com" role="menuitem">Email</a>
+          <a href="https://github.com/harpySDX" target="_blank" rel="noopener" role="menuitem">GitHub — HarpySDX</a>
+          <a href="https://www.linkedin.com/in/aubrey-chen-0671663b5/" target="_blank" rel="noopener" role="menuitem">LinkedIn</a>
+          <a href="https://www.instagram.com/pastylvania/" target="_blank" rel="noopener" role="menuitem">Instagram</a>
+        </div>
+      </div>
+      <div class="role">Grade 11 · aspiring computer scientist</div>
+      <p class="lede">Teaching myself algorithms, C++, and machine learning fundamentals one small project at a time, on the way to the Paul G. Allen School at the University of Washington.</p>
+      <div class="scrollcue">
+        <svg class="paw" viewBox="0 0 24 24" fill="#9C5E39"><circle cx="7" cy="9" r="2.6"/><circle cx="12.5" cy="6" r="2.6"/><circle cx="18" cy="9" r="2.6"/><ellipse cx="12.5" cy="15.5" rx="6.5" ry="5.5"/></svg>
+        Scroll — the pup's ready to walk
+      </div>
+    </div>
+  </section>
+
+  <div id="trail-track">
+    <svg id="trail-svg" preserveAspectRatio="none"></svg>
+
+    <button class="waypoint glass" data-nav="about" data-t="0.09" style="top:0;left:0;">
+      <span class="mile">Mile 1</span>
+      <h3>About</h3>
+      <p>Why computer science, why UW, and what's currently in training.</p>
+    </button>
+
+    <button class="waypoint glass" data-nav="projects" data-t="0.28" style="top:0;left:0;">
+      <span class="mile">Mile 2</span>
+      <h3>Projects</h3>
+      <p>An algorithm visualizer, a C machine-learning project, and a WWI novella.</p>
+    </button>
+
+    <button class="waypoint glass" data-nav="skills" data-t="0.47" style="top:0;left:0;">
+      <span class="mile">Mile 3</span>
+      <h3>Skills</h3>
+      <p>The pup's training log — languages, concepts, and craft in progress.</p>
+    </button>
+
+    <button class="waypoint glass" data-nav="blog" data-t="0.66" style="top:0;left:0;">
+      <span class="mile">Mile 4</span>
+      <h3>Blog</h3>
+      <p>Weekly notes from the build — the messy, honest kind.</p>
+    </button>
+
+    <button class="waypoint glass" data-nav="achievements" data-t="0.85" style="top:0;left:0;">
+      <span class="mile">Mile 5</span>
+      <h3>Achievements</h3>
+      <p>Milestones passed on the way here so far.</p>
+    </button>
+
+  </div>
+
+  <section id="trail-end">
+    <div class="doghouse glass">
+      <h2>End of today's walk</h2>
+      <p>More trail gets laid down every week — thanks for following along.</p>
+      <div class="socials">
+        <a href="mailto:AubreyChen2010@gmail.com">Email</a>
+        <a href="https://github.com/harpySDX" target="_blank" rel="noopener">GitHub — HarpySDX</a>
+        <a href="https://www.linkedin.com/in/aubrey-chen-0671663b5/" target="_blank" rel="noopener">LinkedIn</a>
+        <a href="https://www.instagram.com/pastylvania/" target="_blank" rel="noopener">Instagram</a>
+        <a href="#" id="resume-link">Resume</a>
+      </div>
+    </div>
+  </section>
+</main>
+
+<!-- ============================= DETAIL VIEWS ============================= -->
+<div id="detail-root">
+
+  <section id="page-about" class="view page">
+    <span class="eyebrow">Mile 1</span>
+    <h1>About</h1>
+    <div class="about-grid">
+      <div>
+        <p class="intro">Hi, I'm Aubrey — a high school student in Surrey, BC with a growing obsession with computers, tinkering, and figuring out how things work underneath. I'm building toward studying computer science at the Paul G. Allen School at the University of Washington, and along the way I'm laying down a real foundation in algorithms, software engineering, and applied machine learning. Outside of code, I'm writing a novella set during the First World War, about the brutal realities faced by the people who lived through it.</p>
+
+        <div class="essay-block">
+          <h4>Why CS, why now</h4>
+          <p>I've spent the last few years experimenting with computers, small projects, and whatever ideas I could get my hands on — and somewhere along the way I realized this is the work that actually makes me feel engaged. I'm not choosing computer science because it's easy; it won't be. It's the one path where I can see myself growing, learning, and building something meaningful. I'm still early and still figuring things out, but I'm committed to the foundation: algorithms, programming, problem-solving, and the discipline it takes to turn curiosity into skill.</p>
+        </div>
+
+        <div class="essay-block">
+          <h4>Why UW, why Seattle</h4>
+          <p>The University of Washington feels like the right place for me — not only because of the Paul G. Allen School and the opportunities it offers, but because I want to build a life in the Pacific Northwest. The mountains, the evergreen landscape, the atmosphere around Seattle all feel like where I want to grow into adulthood. UW is the stepping stone: a place to challenge myself academically, go deeper into computer science, and eventually settle into a stable, meaningful career built around work I actually care about.</p>
+        </div>
+      </div>
+
+      <div>
+        <div class="glass card">
+          <h3>Currently in training</h3>
+          <div class="meter-row"><div class="lbl"><span>C++</span><span>65%</span></div><div class="meter"><i style="width:65%"></i></div></div>
+          <div class="meter-row"><div class="lbl"><span>Algorithms &amp; Data Structures</span><span>55%</span></div><div class="meter"><i style="width:55%"></i></div></div>
+          <div class="meter-row"><div class="lbl"><span>Machine Learning Fundamentals</span><span>25%</span></div><div class="meter"><i style="width:25%"></i></div></div>
+          <div class="meter-row"><div class="lbl"><span>Web Development</span><span>40%</span></div><div class="meter"><i style="width:40%"></i></div></div>
+          <div class="meter-row"><div class="lbl"><span>Creative Writing</span><span>35%</span></div><div class="meter"><i style="width:35%"></i></div></div>
+          <div class="meter-row" style="margin-bottom:0;"><div class="lbl"><span>UW application prep</span><span>5%</span></div><div class="meter"><i style="width:5%"></i></div></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="page-projects" class="view page">
+    <span class="eyebrow">Mile 2</span>
+    <h1>Projects</h1>
+    <p class="intro">What I'm actually building while I learn — a place to put theory to work.</p>
+    <div class="card-grid">
+      <div class="glass card">
+        <div class="tag-row"><span class="tag">Theory</span><span class="tag">Algorithms</span><span class="tag">Educational</span></div>
+        <h3>C++ Algorithm Visualizer</h3>
+        <p>A C++ project paired with a browser-based front end that renders sorting and searching algorithms step by step — bubble, insertion, merge, and quick sort, plus binary search, with radix and selection sort in progress. Built around a small event/registry system (UWEvent, UWRegistry) so new algorithms can be plugged in as I learn them.</p>
+        <a class="go" href="visualizer/index.html">View project</a>
+      </div>
+      <div class="glass card">
+        <div class="tag-row"><span class="tag">Machine Learning</span><span class="tag">C</span></div>
+        <h3>C Machine Learning Project</h3>
+        <p>A machine learning project implemented in C, exploring the fundamental concepts and mechanics behind ML from close to the metal, rather than starting from a high-level framework. A practical way to actually understand the algorithms instead of just calling them.</p>
+        <a class="go" href="#">View project</a>
+      </div>
+      <div class="glass card">
+        <div class="tag-row"><span class="tag">Creative Writing</span><span class="tag">Novella</span></div>
+        <h3>Wine &amp; Silence</h3>
+        <p>A creative project set during the First World War, exploring the brutal, unglamorous realities faced by the people who lived through it — and the ethics of survival under those conditions.</p>
+        <a class="go" href="https://docs.google.com/document/d/1xtCMKIzeXQy0Apx3T2lFiGNk7TFbEb9L1yQQ-zZUXXI/edit?usp=sharing" target="_blank" rel="noopener">Read the draft</a>
+      </div>
+    </div>
+  </section>
+
+  <section id="page-skills" class="view page">
+    <span class="eyebrow">Mile 3</span>
+    <h1>Skills</h1>
+    <p class="intro">The pup's training log — what I'm actively practicing, not a finished resume.</p>
+    <div class="card-grid">
+      <div class="glass card">
+        <h3>C++</h3>
+        <p>Core language for the algorithm visualizer — comfortable with control flow, functions, and splitting a project into clean header and implementation files.</p>
+      </div>
+      <div class="glass card">
+        <h3>Algorithms &amp; Data Structures</h3>
+        <p>Sorting (bubble, insertion, merge, quick, and more on the way), binary search, and the data structures that make them work — the foundation I keep coming back to.</p>
+      </div>
+      <div class="glass card">
+        <h3>Machine Learning Fundamentals</h3>
+        <p>Building ML concepts up from C rather than a framework, so the fundamentals actually stick before I reach for higher-level tools.</p>
+      </div>
+      <div class="glass card">
+        <h3>Web Development</h3>
+        <p>HTML, CSS, and JavaScript — used to build this site and the visualizer's browser front end.</p>
+      </div>
+      <div class="glass card">
+        <h3>Creative Writing</h3>
+        <p>Long-form narrative work through "Wine &amp; Silence," balancing historical research with character and pacing.</p>
+      </div>
+    </div>
+  </section>
+
+  <section id="page-blog" class="view page">
+    <span class="eyebrow">Mile 4</span>
+    <h1>Blog</h1>
+    <p class="intro">Weekly, honest notes from the build. Tap a post to read more.</p>
+    <div class="blog-list" id="blog-list"></div>
+  </section>
+
+  <section id="page-achievements" class="view page">
+    <span class="eyebrow">Mile 5</span>
+    <h1>Achievements</h1>
+    <p class="intro">Trail markers passed so far.</p>
+    <div class="timeline">
+      <div class="tl-item"><span class="date">February 2026</span><h4>Started the portfolio &amp; the weekly blog</h4><p>Committed to documenting the journey toward UW in public, one post at a time.</p></div>
+      <div class="tl-item"><span class="date">February 2026</span><h4>Built the algorithm foundations</h4><p>Researched core algorithms and data structures and drafted the plan for the visualizer.</p></div>
+      <div class="tl-item"><span class="date">March 2026</span><h4>Shipped the first working sorts</h4><p>Bubble, merge, insertion, selection, and quick sort all running inside the visualizer, with radix in progress.</p></div>
+      <div class="tl-item"><span class="date">March 2026</span><h4>Got organized</h4><p>Rebuilt notes and project tracking around a Life OS Pro system in Notion — projects and sub-projects finally in one place.</p></div>
+      <div class="tl-item"><span class="date">April 2026</span><h4>Turned 16</h4><p>Kept building anyway.</p></div>
+      <div class="tl-item"><span class="date">April 2026</span><h4>Signed up to accelerate math &amp; physics</h4><p>Enrolled in Pre-Calculus 11 and Physics 12 through the Surrey Academy of Innovative Learning, clearing the way for Calculus 12 and AP Statistics.</p></div>
+    </div>
+  </section>
+
+</div>
+
+<button class="back-fab glass-pill" id="back-fab">
+  <svg viewBox="0 0 24 24" fill="none" stroke="#9C5E39" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
+  Back to the trail
+</button>
+
+<!-- top-level so it's never hidden by view switching (needed to follow the
+     cursor on detail pages, outside the scrolling trail) -->
+<div id="mascot">
+  <div id="mascot-bubble" class="glass-pill"></div>
+  <div class="shadow"></div>
+  <div class="flip"><svg id="mascot-svg" viewBox="0 -16 400 240" shape-rendering="crispEdges"></svg></div>
+</div>
+
+<div id="glass-transition"></div>
+
+<script>
+(function(){
+  "use strict";
+
+  /* ---------- Blog content (from the original blog) ---------- */
+  var posts = [
+    {date:"2026-05-10", title:"Flipping the spectrum", excerpt:"Catching up, rounding everything out.",
+     full:"Spring has kept school busy going into midterms, and progress on the club and side projects has slowed down. Taking stock of everything I've taken on and figuring out what actually gets my attention this month."},
+    {date:"2026-05-03", title:"Flipping the spectrum", excerpt:"Catching up, rounding everything out.",
+     full:"Spring has arrived and I must admit I haven't done too much — school has ramped up as we're entering midterms, and progress has slowed on my projects, including the club. I've taken on a lot and haven't necessarily kept up with all of it consistently."},
+    {date:"2026-04-26", title:"Spring festivities", excerpt:"A quieter week — building the latte deck and adding sliders & customization.",
+     full:"Spring has arrived and I must admit I haven't done too much. School has ramped up as we're entering midterms, and progress has slowed on my projects including the club. I've taken on a lot and haven't necessarily been keeping up with all my projects consistently."},
+    {date:"2026-04-19", title:"Algorithm cafe", excerpt:"Countless more algorithms, and concepting a Spotify-like deck & drivers.",
+     full:"The algorithm visualizer went from zero to hero this week. It only featured three algorithms at the start of the week — bubble, merge, and quick sort — and I've since laid down insertion, selection, and radix sort, with a few more playful ones in progress. Alongside that, I finished the simple foundation for several sorts and started researching how to build a minimal rendering engine, plus small scrollbar and overflow improvements across the portfolio."},
+    {date:"2026-04-05", title:"My sweet sixteenth", excerpt:"Birthday, fixing myself, how I work, and how I build.",
+     full:"Turned 16 this week. Used the moment to think about how I actually work best, and kept building anyway — progress on the visualizer, and continued budgeting toward a tablet to make diagramming easier alongside the laptop."},
+    {date:"2026-03-29", title:"Beginning the tower", excerpt:"Starting the visual element of my visualizer.",
+     full:"Began the visual side of the algorithm visualizer in earnest — moving past the raw sorting logic and into how it should actually look and animate on screen."},
+    {date:"2026-03-22", title:"Fireworks", excerpt:"Club plans, project ideas, and vision.",
+     full:"Spent the week thinking bigger picture — club plans, new project ideas, and where I want all of this to be a year from now."},
+    {date:"2026-03-15", title:"Figuring it out", excerpt:"Further work on certifications, plans for the future, deciding how involved I want to be.",
+     full:"Kept building the sorting foundation for the visualizer while figuring out how deep to go on certifications and extracurriculars without losing momentum on the core project."},
+    {date:"2026-03-08", title:"Rebuilding progress", excerpt:"Flow, finishing the foundation, and the basic algorithms.",
+     full:"It's been loud and proud — bold progress after slowing down the two weeks prior. Notes had been scattered across paper and documents, so I set up a Life OS Pro Notion template to build a routine for consistent progress and to organize projects and sub-projects. Finished the simple foundation for merge, radix, selection, and insertion sort, and started researching how to build a minimal rendering engine. Also added scrollbars to the Projects, Skills, and Blog overviews, and let blog posts overflow so they can hold more text — this post included."},
+    {date:"2026-03-01", title:"Algorithm foundations", excerpt:"Polishing the environment & beginning the first major project.",
+     full:"Polished my dev environment and began the first project that spans more than one file or folder — more complicated than anything I'd built before, assembling several languages together. Also started budgeting toward a tablet to make diagramming easier."},
+    {date:"2026-02-22", title:"A quiet week of exploration", excerpt:"Familiarizing myself with my tools and drafting the visualizer concept.",
+     full:"Before starting on the Algorithm Visualizer, I wanted to polish the foundation of the portfolio and share a bit about myself. Built the footer and homepage first, kept the shading and transitions simple for now, and put together learning bars to summarize where I'm at. Spent the rest of the week researching algorithms and data structures — the field is bigger than I expected, but I found a solid starting point."},
+    {date:"2026-02-15", title:"Preparing the path ahead", excerpt:"Light touch-ups to the portfolio foundation, and what I've been researching.",
+     full:"Before I can embark on the Algorithm Visualizer, I wanted to first polish up the foundation of the portfolio and share a bit about where I'm at. Built out the footer and homepage, kept things simple with basic shading and transitions for now, and put together some learning bars summarizing my skills. Spent the week researching algorithms and data structures in depth — reading, watching lessons from small creators and universities alike, and slowly turning an overwhelming topic into a real starting point."},
+    {date:"2026-02-09", title:"Beginning my path to UW", excerpt:"A short introduction to my development journey, and why this portfolio exists.",
+     full:"Today marks the beginning of something important. After months of learning, experimenting, and building small projects, I finally decided to create a portfolio that reflects who I am and who I want to become — a space to track progress, document what I learn, and reflect on the challenges and breakthroughs along the way. My long-term goal is to study computer science at the University of Washington. I know the path won't be easy, but I'm excited to grow through each project I take on. This first post is a small milestone: the first commit in a much larger journey."}
+  ];
+
+  var monthNames = ["January","February","March","April","May","June","July","August","September","October","November","December"];
+  function fmtDate(iso){
+    var p = iso.split("-"); var y=+p[0], m=+p[1], d=+p[2];
+    return monthNames[m-1] + " " + d + ", " + y;
+  }
+
+  var blogList = document.getElementById("blog-list");
+  posts.forEach(function(post){
+    var item = document.createElement("div");
+    item.className = "blog-item glass";
+    item.innerHTML =
+      '<span class="date">'+fmtDate(post.date)+'</span>' +
+      '<h3>'+post.title+'</h3>' +
+      '<p class="excerpt">'+post.excerpt+'</p>' +
+      '<div class="full"><p style="margin:0;">'+post.full+'</p></div>' +
+      '<span class="toggle">Read more</span>';
+    item.addEventListener("click", function(){
+      item.classList.toggle("open");
+      var t = item.querySelector(".toggle");
+      t.textContent = item.classList.contains("open") ? "Show less" : "Read more";
+    });
+    blogList.appendChild(item);
+  });
+
+  /* ---------- View registry ---------- */
+  var views = {
+    trail: document.getElementById("trail-view"),
+    about: document.getElementById("page-about"),
+    projects: document.getElementById("page-projects"),
+    skills: document.getElementById("page-skills"),
+    blog: document.getElementById("page-blog"),
+    achievements: document.getElementById("page-achievements")
+  };
+  var currentId = "trail";
+  var savedTrailScroll = 0;
+  var backFab = document.getElementById("back-fab");
+  var overlay = document.getElementById("glass-transition");
+
+  function setBackFabVisible(v){ backFab.style.display = v ? "flex" : "none"; }
+  setBackFabVisible(false);
+
+  function goTo(id, evt){
+    if(id === currentId) return;
+    closeContactMenu();
+    var cx = evt && evt.clientX ? evt.clientX : window.innerWidth/2;
+    var cy = evt && evt.clientY ? evt.clientY : window.innerHeight/2;
+    overlay.style.setProperty("--cx", cx+"px");
+    overlay.style.setProperty("--cy", cy+"px");
+
+    overlay.classList.remove("uncover");
+    // reflow then cover
+    void overlay.offsetWidth;
+    overlay.classList.add("cover");
+
+    var reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    var delay = reduced ? 10 : 620;
+
+    setTimeout(function(){
+      if(currentId === "trail") savedTrailScroll = window.scrollY;
+      views[currentId].classList.remove("visible");
+      views[id].classList.add("visible");
+      currentId = id;
+      setBackFabVisible(id !== "trail");
+      setMascotMode(id);
+      if(id === "trail"){
+        window.scrollTo(0, savedTrailScroll);
+      } else {
+        window.scrollTo(0,0);
+      }
+      requestAnimationFrame(function(){
+        overlay.classList.remove("cover");
+        void overlay.offsetWidth;
+        overlay.classList.add("uncover");
+        setTimeout(function(){ overlay.classList.remove("uncover"); }, delay);
+      });
+    }, delay);
+  }
+
+  document.querySelectorAll("[data-nav]").forEach(function(el){
+    el.addEventListener("click", function(evt){ goTo(el.getAttribute("data-nav"), evt); });
+  });
+  backFab.addEventListener("click", function(evt){ goTo("trail", evt); });
+
+  document.getElementById("resume-link").addEventListener("click", function(e){
+    e.preventDefault();
+    alert("Resume coming soon — check back shortly.");
+  });
+
+  /* ---------- Name → contact menu ---------- */
+  var nameTrigger = document.getElementById("name-trigger");
+  var contactMenu = document.getElementById("contact-menu");
+  function closeContactMenu(){
+    contactMenu.classList.remove("open");
+    nameTrigger.setAttribute("aria-expanded", "false");
+  }
+  function toggleContactMenu(){
+    var open = contactMenu.classList.toggle("open");
+    nameTrigger.setAttribute("aria-expanded", open ? "true" : "false");
+  }
+  nameTrigger.addEventListener("click", function(e){ e.stopPropagation(); toggleContactMenu(); });
+  nameTrigger.addEventListener("keydown", function(e){
+    if(e.key==="Enter" || e.key===" "){ e.preventDefault(); toggleContactMenu(); }
+    if(e.key==="Escape"){ closeContactMenu(); }
+  });
+  document.addEventListener("click", function(e){
+    if(!contactMenu.contains(e.target) && e.target!==nameTrigger){ closeContactMenu(); }
+  });
+  document.addEventListener("keydown", function(e){ if(e.key==="Escape") closeContactMenu(); });
+
+  /* ---------- Trail path + mascot ---------- */
+  var track = document.getElementById("trail-track");
+  var svg = document.getElementById("trail-svg");
+  var mascot = document.getElementById("mascot");
+  var mascotSvg = document.getElementById("mascot-svg");
+  var flip = mascot.querySelector(".flip");
+  var waypoints = Array.prototype.slice.call(document.querySelectorAll(".waypoint"));
+
+  /* 8-bit two-frame walk sprite, built from plain rects so it stays crisp at any size */
+  var FRAME_A = '<rect x="64" y="96" width="240" height="96" fill="#3B2A1D"/><rect x="96" y="96" width="112" height="48" fill="#3B2A1D"/><rect x="64" y="144" width="240" height="48" fill="#3B2A1D"/><rect x="16" y="64" width="64" height="64" fill="#3B2A1D"/><rect x="0" y="48" width="48" height="48" fill="#3B2A1D"/><rect x="256" y="32" width="128" height="128" fill="#3B2A1D"/><rect x="240" y="-16" width="80" height="80" fill="#3B2A1D"/><rect x="320" y="80" width="80" height="64" fill="#3B2A1D"/><rect x="288" y="64" width="48" height="48" fill="#3B2A1D"/><rect x="352" y="80" width="48" height="48" fill="#3B2A1D"/><rect x="80" y="112" width="208" height="64" fill="#F2A75F"/><rect x="112" y="112" width="80" height="16" fill="#C88F5C"/><rect x="80" y="160" width="208" height="16" fill="#FBD9AC"/><rect x="32" y="80" width="32" height="32" fill="#C88F5C"/><rect x="16" y="64" width="16" height="16" fill="#C88F5C"/><rect x="272" y="48" width="96" height="96" fill="#F2A75F"/><rect x="256" y="0" width="48" height="48" fill="#9C5E39"/><rect x="336" y="96" width="48" height="32" fill="#FBD9AC"/><rect x="304" y="80" width="16" height="16" fill="#241509"/><rect x="368" y="96" width="16" height="16" fill="#241509"/><rect x="80" y="176" width="32" height="48" fill="#3B2A1D"/><rect x="160" y="176" width="32" height="32" fill="#3B2A1D"/><rect x="224" y="176" width="32" height="32" fill="#3B2A1D"/><rect x="304" y="176" width="32" height="48" fill="#3B2A1D"/>';
+  var FRAME_B = '<rect x="64" y="96" width="240" height="96" fill="#3B2A1D"/><rect x="96" y="96" width="112" height="48" fill="#3B2A1D"/><rect x="64" y="144" width="240" height="48" fill="#3B2A1D"/><rect x="16" y="64" width="64" height="64" fill="#3B2A1D"/><rect x="0" y="48" width="48" height="48" fill="#3B2A1D"/><rect x="256" y="32" width="128" height="128" fill="#3B2A1D"/><rect x="240" y="-16" width="80" height="80" fill="#3B2A1D"/><rect x="320" y="80" width="80" height="64" fill="#3B2A1D"/><rect x="288" y="64" width="48" height="48" fill="#3B2A1D"/><rect x="352" y="80" width="48" height="48" fill="#3B2A1D"/><rect x="80" y="112" width="208" height="64" fill="#F2A75F"/><rect x="112" y="112" width="80" height="16" fill="#C88F5C"/><rect x="80" y="160" width="208" height="16" fill="#FBD9AC"/><rect x="32" y="80" width="32" height="32" fill="#C88F5C"/><rect x="16" y="64" width="16" height="16" fill="#C88F5C"/><rect x="272" y="48" width="96" height="96" fill="#F2A75F"/><rect x="256" y="0" width="48" height="48" fill="#9C5E39"/><rect x="336" y="96" width="48" height="32" fill="#FBD9AC"/><rect x="304" y="80" width="16" height="16" fill="#241509"/><rect x="368" y="96" width="16" height="16" fill="#241509"/><rect x="80" y="176" width="32" height="32" fill="#3B2A1D"/><rect x="160" y="176" width="32" height="48" fill="#3B2A1D"/><rect x="224" y="176" width="32" height="48" fill="#3B2A1D"/><rect x="304" y="176" width="32" height="32" fill="#3B2A1D"/>';
+  mascotSvg.innerHTML = FRAME_A;
+  var currentFrame = "A";
+  var frameTimer = null;
+  function startWalkFrames(){
+    if(frameTimer) return;
+    frameTimer = setInterval(function(){
+      currentFrame = currentFrame === "A" ? "B" : "A";
+      mascotSvg.innerHTML = currentFrame === "A" ? FRAME_A : FRAME_B;
+    }, 160);
+  }
+  function stopWalkFrames(){
+    clearInterval(frameTimer);
+    frameTimer = null;
+    currentFrame = "A";
+    mascotSvg.innerHTML = FRAME_A;
+  }
+
+  function xAt(t){
+    var narrow = window.innerWidth < 720;
+    var amp = narrow ? 20 : 30;
+    var x = 50 + amp*Math.sin(t*Math.PI*2*1.15 + 0.6);
+    return Math.max(narrow?18:12, Math.min(narrow?82:88, x));
+  }
+
+  var trackHeight = 0;
+
+  function layout(){
+    trackHeight = track.offsetHeight || 1;
+
+    svg.setAttribute("viewBox", "0 0 100 " + trackHeight);
+    var d = "";
+    var steps = 120;
+    for(var i=0;i<=steps;i++){
+      var t = i/steps;
+      var x = xAt(t);
+      var y = t*trackHeight;
+      d += (i===0 ? "M":"L") + x + " " + y + " ";
+    }
+    svg.innerHTML = '<path d="'+d+'"></path>';
+
+    waypoints.forEach(function(wp){
+      var t = parseFloat(wp.getAttribute("data-t"));
+      var side = wp.getAttribute("data-nav").length % 2 === 0 ? 1 : -1;
+      var baseX = xAt(t);
+      var narrow = window.innerWidth < 720;
+      var offset = narrow ? 0 : side*20;
+      var x = Math.max(narrow?50:16, Math.min(narrow?50:84, baseX+offset));
+      wp.style.left = x + "%";
+      wp.style.top = (t*trackHeight) + "px";
+    });
+  }
+
+  var lastX = null, lastFrac = 0, idleTimer = null;
+  var MASCOT_VH = 0.42; // matches #mascot's fixed CSS "top: 42vh"
+
+  // The mascot sits at a fixed spot on screen (42% down the viewport); what
+  // moves is the trail underneath it. Uses getBoundingClientRect (always
+  // viewport-relative) instead of window.scrollY, so this keeps working no
+  // matter which element actually owns the scrolling — window, a wrapper
+  // <div>, or a touch-momentum container.
+  function updateMascot(){
+    if(currentId !== "trail") return;
+    var rectTop = track.getBoundingClientRect().top;
+    var fixedOffsetPx = window.innerHeight * MASCOT_VH;
+    var frac = (fixedOffsetPx - rectTop) / trackHeight;
+    frac = Math.max(0, Math.min(1, frac));
+    var x = xAt(frac);
+    mascot.style.left = x + "%";
+    mascot.style.opacity = (rectTop <= fixedOffsetPx) ? "1" : "0";
+
+    if(lastX !== null && Math.abs(x - lastX) > 0.02){
+      flip.style.transform = (x - lastX) < 0 ? "scaleX(-1)" : "scaleX(1)";
+    }
+
+    if(Math.abs(frac - lastFrac) > 0.00005){
+      mascot.classList.add("walking");
+      startWalkFrames();
+      clearTimeout(idleTimer);
+      idleTimer = setTimeout(function(){
+        mascot.classList.remove("walking");
+        stopWalkFrames();
+      }, 160);
+    }
+    lastX = x;
+    lastFrac = frac;
+  }
+
+  window.addEventListener("resize", function(){ layout(); updateMascot(); });
+  window.addEventListener("load", function(){ layout(); updateMascot(); });
+  setTimeout(function(){ layout(); updateMascot(); }, 400);
+
+  /* ---------- Mascot: click-to-react, and cursor-follow off the trail ---------- */
+  var mascotBubble = document.getElementById("mascot-bubble");
+  var bubbleTimer = null;
+  function sayBubble(text){
+    mascotBubble.textContent = text;
+    mascotBubble.classList.add("show");
+    clearTimeout(bubbleTimer);
+    bubbleTimer = setTimeout(function(){ mascotBubble.classList.remove("show"); }, 900);
+  }
+  var BARKS = ["Woof!","Boop!","Yip!","Hi!"];
+  mascot.addEventListener("click", function(e){
+    e.stopPropagation();
+    mascot.classList.remove("bounce");
+    void mascot.offsetWidth; // restart the animation even if it's already mid-bounce
+    mascot.classList.add("bounce");
+    sayBubble(BARKS[Math.floor(Math.random()*BARKS.length)]);
+  });
+  mascot.addEventListener("animationend", function(e){
+    if(e.target !== mascot) return;
+    mascot.classList.remove("bounce", "tap");
+  });
+
+  function spawnRipple(x,y){
+    var r = document.createElement("div");
+    r.className = "click-ripple";
+    r.style.left = x+"px"; r.style.top = y+"px";
+    document.body.appendChild(r);
+    setTimeout(function(){ r.remove(); }, 520);
+  }
+
+  var cursorPos = { x:null, y:null };
+  var mascotPos = { x: window.innerWidth/2, y: window.innerHeight*0.5 };
+  document.addEventListener("mousemove", function(e){
+    cursorPos.x = e.clientX; cursorPos.y = e.clientY;
+  });
+
+  // Off the trail, the pup un-fixes from the walking path and follows the
+  // cursor around instead — pointer-events stay off so it never blocks a
+  // click, but a document-level listener still lets it "tap" whatever you hit.
+  function setMascotMode(id){
+    if(id === "trail"){
+      mascot.classList.remove("cursor-mode");
+      mascot.style.top = "";   // release the inline override, resume CSS "top:42vh"
+      lastX = null;            // avoid a spurious flip on the next trail frame
+    } else {
+      mascot.classList.add("cursor-mode");
+      cursorPos.x = null; cursorPos.y = null; // fade in fresh at the next real mousemove
+      mascot.style.opacity = "0";
+    }
+  }
+
+  function updateCursorMascot(){
+    if(currentId === "trail") return;
+    if(cursorPos.x === null) return;
+    var dx = cursorPos.x - mascotPos.x;
+    mascotPos.x += dx * 0.2;
+    mascotPos.y += (cursorPos.y - mascotPos.y) * 0.2;
+    mascot.style.left = mascotPos.x + "px";
+    mascot.style.top = mascotPos.y + "px";
+    mascot.style.opacity = "1";
+    if(Math.abs(dx) > 1){ flip.style.transform = dx < 0 ? "scaleX(-1)" : "scaleX(1)"; }
+  }
+
+  document.addEventListener("click", function(e){
+    if(currentId === "trail") return;
+    if(mascot.contains(e.target) || (contactMenu && contactMenu.contains(e.target))) return;
+    mascotPos.x = e.clientX; mascotPos.y = e.clientY;
+    mascot.style.left = mascotPos.x + "px";
+    mascot.style.top = mascotPos.y + "px";
+    mascot.style.opacity = "1";
+    mascot.classList.remove("tap");
+    void mascot.offsetWidth;
+    mascot.classList.add("tap");
+    spawnRipple(e.clientX, e.clientY);
+  });
+
+  // Continuous rAF loop keeps the pup in sync every frame regardless of how
+  // scroll events are delivered in the surrounding page/embed.
+  function raf(){
+    if(currentId === "trail"){ updateMascot(); } else { updateCursorMascot(); }
+    requestAnimationFrame(raf);
+  }
+  requestAnimationFrame(raf);
+})();
+</script>
+</body>
+</html>
